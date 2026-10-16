@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIDA - AI Discovery Assistant</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar for smooth chat feel */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.4);
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(156, 163, 175, 0.6);
+        }
+
+        /* Pulsing Dot Animation for Typing Indicator */
+        @keyframes pulseDot {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        .typing-dot {
+            animation: pulseDot 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col justify-between">
+
+    <!-- Header Section -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-10 px-4 py-3">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3">
+            <!-- Brand & Tagline -->
+            <div class="flex items-center gap-3 text-center md:text-left">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30 font-bold text-xl">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold text-white flex items-center gap-2 justify-center md:justify-start">
+                        AIDA <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-medium border border-indigo-500/30">AI Discovery Assistant</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Simplifying AI concepts into friendly, everyday explanations for students.</p>
+                </div>
+            </div>
+
+            <!-- Action Controls & Info Modal Trigger -->
+            <div class="flex items-center gap-2">
+                <button id="infoBtn" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info"></i> About AIDA
+                </button>
+                <button id="clearChatBtn" class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-trash-can"></i> Clear Chat
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl w-full mx-auto flex-1 flex flex-col p-3 sm:p-4 gap-3">
+
+        <!-- Quick Topic Chips Bar -->
+        <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-3">
+            <div class="text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-lightbulb text-amber-400"></i> Click a topic or ask your own question below:
+            </div>
+            <div class="flex flex-wrap gap-2 text-xs">
+                <button onclick="askTopic('What is AI?')" class="chip-btn bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/50 text-indigo-200 px-3 py-1.5 rounded-full transition hover:scale-105">
+                    🤖 What is AI?
+                </button>
+                <button onclick="askTopic('How does Machine Learning work?')" class="chip-btn bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/50 text-indigo-200 px-3 py-1.5 rounded-full transition hover:scale-105">
+                    ⚙️ Machine Learning
+                </button>
+                <button onclick="askTopic('What is Supervised Learning?')" class="chip-btn bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/50 text-indigo-200 px-3 py-1.5 rounded-full transition hover:scale-105">
+                    🏷️ Supervised Learning
+                </button>
+                <button onclick="askTopic('What is Unsupervised Learning?')" class="chip-btn bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/50 text-indigo-200 px-3 py-1.5 rounded-full transition hover:scale-105">
+                    🔍 Unsupervised Learning
+                </button>
+                <button onclick="askTopic('What is Generative AI?')" class="chip-btn bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/50 text-indigo-200 px-3 py-1.5 rounded-full transition hover:scale-105">
+                    🎨 Generative AI
+                </button>
+                <button onclick="askTopic('Difference between AI vs Machine Learning')" class="chip-btn bg-indigo-950/60 hover:bg-indigo-900 border border-indigo-700/50 text-indigo-200 px-3 py-1.5 rounded-full transition hover:scale-105">
+                    ⚖️ AI vs ML
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Container -->
+        <div class="flex-1 bg-slate-800/60 border border-slate-700/60 rounded-2xl flex flex-col overflow-hidden shadow-inner min-h-[380px]">
+            <!-- Messages List -->
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto space-y-4">
+                <!-- Welcome Message injected by JS -->
+            </div>
+
+            <!-- Typing Indicator (Hidden by default) -->
+            <div id="typingIndicator" class="hidden px-4 py-2 bg-slate-800/80 border-t border-slate-700/40 flex items-center gap-2 text-xs text-indigo-300">
+                <div class="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white text-xs">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <span>AIDA is thinking...</span>
+                <div class="flex items-center gap-1 ml-1">
+                    <span class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
+                    <span class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
+                    <span class="w-1.5 h-1.5 bg-indigo-400 rounded-full typing-dot"></span>
+                </div>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="p-3 bg-slate-800/90 border-t border-slate-700/60">
+                <form id="chatForm" class="flex gap-2 items-center">
+                    <input 
+                        type="text" 
+                        id="userInput" 
+                        placeholder="Type your question about AI here... (e.g., 'Explain deep learning')" 
+                        class="flex-1 bg-slate-900 border border-slate-700 text-slate-100 placeholder-slate-500 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition"
+                        autocomplete="off"
+                    >
+                    <button 
+                        type="submit" 
+                        id="sendBtn"
+                        class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-5 py-2.5 rounded-xl transition flex items-center gap-2 text-sm shadow-md shadow-indigo-600/30 active:scale-95"
+                    >
+                        <span>Send</span>
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Info Modal -->
+    <div id="infoModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-indigo-400"></i> About AIDA
+                </h3>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+                <div>
+                    <h4 class="font-semibold text-indigo-300 text-xs uppercase tracking-wider mb-1">Target Users</h4>
+                    <p>High school students, introductory college students, or curious beginners who want clear, jargon-free explanations of Artificial Intelligence terms.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-indigo-300 text-xs uppercase tracking-wider mb-1">Problem It Solves</h4>
+                    <p>Technical jargon in data science and AI can feel overwhelming. AIDA breaks down topics like Supervised Learning, Neural Networks, and Generative AI into plain English with real-world analogies (like flashcards, bike riding, and recipes).</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-indigo-300 text-xs uppercase tracking-wider mb-1">How to Use</h4>
+                    <p>Click on any prompt button at the top or ask your own question in the input box below. Try typing keywords like <em>"bias"</em>, <em>"deep learning"</em>, or <em>"AI vs ML"</em>!</p>
+                </div>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button id="closeModalConfirm" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs px-4 py-2 rounded-lg transition">
+                    Got it!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Topic Knowledge Base with Friendly Analogies
+        const knowledgeBase = [
+            {
+                keywords: ["what is ai", "artificial intelligence", "definition of ai", "define ai"],
+                title: "Artificial Intelligence (AI)",
+                response: "<strong>Artificial Intelligence (AI)</strong> is like teaching computers to 'think' or make decisions similar to how humans do.<br><br>💡 <strong>Analogy:</strong> Imagine giving a computer a brain upgrade so it can recognize faces, understand speech, or play games instead of just following fixed step-by-step math instructions!"
+            },
+            {
+                keywords: ["machine learning", "what is ml", "how ml works", "how machine learning works"],
+                title: "Machine Learning (ML)",
+                response: "<strong>Machine Learning (ML)</strong> is a branch of AI where computers learn patterns from experience and data, rather than being explicitly programmed for every scenario.<br><br>🚲 <strong>Analogy:</strong> Think of learning to ride a bike! No one hands you a manual with math equations for balance—you practice, stumble, adjust, and get better through trial and experience. ML algorithms do the exact same thing with data."
+            },
+            {
+                keywords: ["supervised learning", "supervised"],
+                title: "Supervised Learning",
+                response: "<strong>Supervised Learning</strong> is a type of machine learning where the computer learns using a dataset that already has the correct answers (labels).<br><br>🃏 <strong>Analogy:</strong> It is like studying with <em>flashcards with answers on the back</em>! You look at thousands of cat and dog photos labeled 'Cat' or 'Dog'. After checking its answers enough times, the computer learns what features make a cat or a dog."
+            },
+            {
+                keywords: ["unsupervised learning", "unsupervised"],
+                title: "Unsupervised Learning",
+                response: "<strong>Unsupervised Learning</strong> happens when the computer is given raw data <em>without any labels or correct answers</em> and must find hidden patterns or groupings on its own.<br><br>🔘 <strong>Analogy:</strong> Imagine pouring a giant box of mixed colorful buttons onto a table without any instructions. Naturally, you might sort them by color, size, or number of holes. The computer groups similar data items based on hidden patterns!"
+            },
+            {
+                keywords: ["generative ai", "genai", "chatgpt", "midjourney", "llm", "generative"],
+                title: "Generative AI (GenAI)",
+                response: "<strong>Generative AI</strong> is a type of AI designed to <em>create new content</em> from scratch—like writing essays, composing music, or drawing pictures based on text prompts.<br><br>🎨 <strong>Analogy:</strong> Imagine an artist who has read every book or viewed millions of paintings. When you ask for 'a cat wearing a space suit on Mars', GenAI mixes its learned knowledge to generate a totally original piece of work!"
+            },
+            {
+                keywords: ["deep learning", "neural network", "neural networks"],
+                title: "Deep Learning & Neural Networks",
+                response: "<strong>Deep Learning</strong> is an advanced form of Machine Learning inspired by the human brain. It uses layers of artificial 'neurons' to detect complex patterns.<br><br>🧠 <strong>Analogy:</strong> Think of an assembly line in a factory. The first layer detects basic edges or colors, the middle layers recognize shapes and nose structures, and the final layer combines everything to realize: 'Hey, that's a face!'"
+            },
+            {
+                keywords: ["difference", "ai vs ml", "ai versus ml", "machine learning vs ai"],
+                title: "Difference Between AI and Machine Learning",
+                response: "<strong>AI vs Machine Learning:</strong><br><br>• <strong>Artificial Intelligence (AI):</strong> The big umbrella concept of creating smart machines.<br>• <strong>Machine Learning (ML):</strong> A specific <em>method</em> inside AI focused on learning from data.<br><br>🍕 <strong>Analogy:</strong> If <strong>Vehicle</strong> is AI, then <strong>Sports Cars</strong> or <strong>Bicycles</strong> are Machine Learning—a specific way to achieve smart movement!"
+            },
+            {
+                keywords: ["bias", "ethics", "fairness", "ai ethics"],
+                title: "AI Ethics & Bias",
+                response: "<strong>AI Bias & Ethics</strong> refers to making sure AI systems treat everyone fairly and accurately. Since AI learns from human-created data, it can accidentally inherit human mistakes or unfair prejudices.<br><br>⚖️ <strong>Why it matters:</strong> If an AI is trained only on photos of apples, it might fail to recognize bananas! Ensuring diverse and fair training data keeps AI safe and reliable for everyone."
+            }
+        ];
+
+        // Fallback Response when query isn't directly matched
+        const fallbackResponse = `I'm not quite sure about that exact phrase, but I can definitely help you learn about AI basics!<br><br>
+        <strong>Try asking me about:</strong>
+        <ul class="list-disc list-inside mt-1 space-y-1 text-slate-300">
+            <li>What is <strong>Artificial Intelligence</strong>?</li>
+            <li>How does <strong>Machine Learning</strong> work?</li>
+            <li>What is <strong>Supervised Learning</strong> vs <strong>Unsupervised Learning</strong>?</li>
+            <li>What is <strong>Generative AI</strong> (like ChatGPT)?</li>
+            <li>What are <strong>Neural Networks</strong> or <strong>AI Ethics</strong>?</li>
+        </ul>`;
+
+        // DOM Element references
+        const chatMessages = document.getElementById('chatMessages');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const infoBtn = document.getElementById('infoBtn');
+        const infoModal = document.getElementById('infoModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const closeModalConfirm = document.getElementById('closeModalConfirm');
+
+        // Helper: Format current timestamp (e.g. 10:42 AM)
+        function getTimestamp() {
+            const now = new Date();
+            return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Helper: Scroll chat to bottom smooth
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Add Message to Chat UI
+        function appendMessage(sender, text, isHtml = true) {
+            const time = getTimestamp();
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex gap-3 text-sm ${sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`;
+
+            if (sender === 'user') {
+                messageDiv.innerHTML = `
+                    <div class="max-w-[85%] sm:max-w-[75%] space-y-1">
+                        <div class="bg-indigo-600 text-white p-3.5 rounded-2xl rounded-tr-none shadow-md">
+                            ${text}
+                        </div>
+                        <div class="text-[10px] text-slate-400 text-right pr-1">${time}</div>
+                    </div>
+                    <div class="w-8 h-8 rounded-xl bg-slate-700 flex items-center justify-center text-slate-200 text-xs shrink-0">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white text-xs shrink-0 shadow-md shadow-indigo-500/20">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="max-w-[85%] sm:max-w-[75%] space-y-1">
+                        <div class="bg-slate-800 border border-slate-700/80 text-slate-100 p-3.5 rounded-2xl rounded-tl-none shadow-md leading-relaxed">
+                            ${text}
+                        </div>
+                        <div class="text-[10px] text-slate-400 pl-1">${time}</div>
+                    </div>
+                `;
+            }
+
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        // Matching Engine Logic
+        function generateResponse(query) {
+            const cleanedQuery = query.toLowerCase().trim();
+
+            for (const item of knowledgeBase) {
+                for (const keyword of item.keywords) {
+                    if (cleanedQuery.includes(keyword)) {
+                        return item.response;
+                    }
+                }
+            }
+            return fallbackResponse;
+        }
+
+        // Handle User Input Submission
+        function handleUserSubmit(text) {
+            const query = text || userInput.value.trim();
+            if (!query) return;
+
+            // 1. Render user message
+            appendMessage('user', query, false);
+            userInput.value = '';
+
+            // 2. Show typing indicator
+            typingIndicator.classList.remove('hidden');
+            scrollToBottom();
+
+            // 3. Simulate thinking delay (700ms - 1200ms for realistic bot feel)
+            const delay = Math.floor(Math.random() * 500) + 700;
+            setTimeout(() => {
+                typingIndicator.classList.add('hidden');
+                const botAnswer = generateResponse(query);
+                appendMessage('aida', botAnswer, true);
+            }, delay);
+        }
+
+        // Global Quick Ask Handler for Topic Chips
+        window.askTopic = function(topicText) {
+            handleUserSubmit(topicText);
+        }
+
+        // Initial Greeting
+        function sendGreeting() {
+            chatMessages.innerHTML = '';
+            const greetingText = `
+                Hello there! 👋 I'm <strong>AIDA</strong> (AI Discovery Assistant).<br><br>
+                My job is to help you learn about Artificial Intelligence using simple, beginner-friendly terms and fun real-world analogies.<br><br>
+                Click one of the topic chips above or ask me anything to get started!
+            `;
+            appendMessage('aida', greetingText, true);
+        }
+
+        // Event Listeners
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            handleUserSubmit();
+        });
+
+        clearChatBtn.addEventListener('click', () => {
+            sendGreeting();
+        });
+
+        // Modal Controls
+        infoBtn.addEventListener('click', () => infoModal.classList.remove('hidden'));
+        closeModalBtn.addEventListener('click', () => infoModal.classList.add('hidden'));
+        closeModalConfirm.addEventListener('click', () => infoModal.classList.add('hidden'));
+        infoModal.addEventListener('click', (e) => {
+            if (e.target === infoModal) infoModal.classList.add('hidden');
+        });
+
+        // Initialize on load
+        window.onload = function() {
+            sendGreeting();
+        };
+    </script>
+</body>
+</html>
